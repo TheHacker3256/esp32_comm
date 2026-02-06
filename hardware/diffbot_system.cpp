@@ -40,6 +40,9 @@ hardware_interface::CallbackReturn DiffDriveArduinoHardware::on_init(
   cfg_.front_right_wheel_name = info_.hardware_parameters["front_right_wheel_name"];
   cfg_.rear_left_wheel_name = info_.hardware_parameters["rear_left_wheel_name"];
   cfg_.rear_right_wheel_name = info_.hardware_parameters["rear_right_wheel_name"];
+  cfg_.forward_rear_left_wheel_name = info_.hardware_parameters["forward_rear_left_wheel_name"];
+  cfg_.forward_rear_right_wheel_name = info_.hardware_parameters["forward_rear_right_wheel_name"];
+
   cfg_.loop_rate = std::stof(info_.hardware_parameters["loop_rate"]);
   cfg_.device = info_.hardware_parameters["device"];
   cfg_.baud_rate = std::stoi(info_.hardware_parameters["baud_rate"]);
@@ -62,6 +65,8 @@ hardware_interface::CallbackReturn DiffDriveArduinoHardware::on_init(
   wheel_fr_.setup(cfg_.front_right_wheel_name, cfg_.enc_counts_per_rev);
   wheel_rl_.setup(cfg_.rear_left_wheel_name, cfg_.enc_counts_per_rev);
   wheel_rr_.setup(cfg_.rear_right_wheel_name, cfg_.enc_counts_per_rev);
+  wheel_frr_.setup(cfg_.forward_rear_right_wheel_name, cfg_.enc_counts_per_rev);
+  wheel_frl_.setup(cfg_.forward_rear_left_wheel_name, cfg_.enc_counts_per_rev);
 
   for (const hardware_interface::ComponentInfo & joint : info_.joints)
   {
@@ -139,6 +144,17 @@ std::vector<hardware_interface::StateInterface> DiffDriveArduinoHardware::export
   state_interfaces.emplace_back(hardware_interface::StateInterface(
     wheel_rr_.name, hardware_interface::HW_IF_VELOCITY, &wheel_rr_.vel));
 
+  state_interfaces.emplace_back(hardware_interface::StateInterface(
+    wheel_frr_.name, hardware_interface::HW_IF_POSITION, &wheel_frr_.pos));
+  state_interfaces.emplace_back(hardware_interface::StateInterface(
+    wheel_frr_.name, hardware_interface::HW_IF_VELOCITY, &wheel_frr_.vel));
+
+  state_interfaces.emplace_back(hardware_interface::StateInterface(
+    wheel_frl_.name, hardware_interface::HW_IF_POSITION, &wheel_frl_.pos));
+  state_interfaces.emplace_back(hardware_interface::StateInterface(
+    wheel_frl_.name, hardware_interface::HW_IF_VELOCITY, &wheel_frl_.vel));
+
+
   return state_interfaces;
 }
 
@@ -157,6 +173,12 @@ std::vector<hardware_interface::CommandInterface> DiffDriveArduinoHardware::expo
 
   command_interfaces.emplace_back(hardware_interface::CommandInterface(
     wheel_rr_.name, hardware_interface::HW_IF_VELOCITY, &wheel_rr_.cmd));
+
+  command_interfaces.emplace_back(hardware_interface::CommandInterface(
+    wheel_frr_.name, hardware_interface::HW_IF_VELOCITY, &wheel_frr_.cmd));
+
+  command_interfaces.emplace_back(hardware_interface::CommandInterface(
+    wheel_frl_.name, hardware_interface::HW_IF_VELOCITY, &wheel_frl_.cmd));
   return command_interfaces;
 }
 
@@ -245,8 +267,11 @@ hardware_interface::return_type esp32_comm ::DiffDriveArduinoHardware::write(
   int motor_fr_counts_per_loop = wheel_fr_.cmd / wheel_fr_.rads_per_count / cfg_.loop_rate;
   int motor_rl_counts_per_loop = wheel_rl_.cmd / wheel_rl_.rads_per_count / cfg_.loop_rate;
   int motor_rr_counts_per_loop = wheel_rr_.cmd / wheel_rr_.rads_per_count / cfg_.loop_rate;
+  int motor_frr_counts_per_loop = wheel_frr_.cmd / wheel_frr_.rads_per_count / cfg_.loop_rate;
+  int motor_frl_counts_per_loop = wheel_frl_.cmd / wheel_frl_.rads_per_count / cfg_.loop_rate;
 
-  comms_.set_motor_values(motor_fr_counts_per_loop, motor_rr_counts_per_loop, motor_fl_counts_per_loop, motor_rl_counts_per_loop);
+
+  comms_.set_motor_values(motor_fr_counts_per_loop, motor_rr_counts_per_loop, motor_fl_counts_per_loop, motor_rl_counts_per_loop, motor_frr_counts_per_loop, motor_frl_counts_per_loop);
   return hardware_interface::return_type::OK;
 }
 
