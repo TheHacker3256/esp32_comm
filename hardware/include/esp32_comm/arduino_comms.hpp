@@ -99,10 +99,10 @@ public:
     // val_2 = 0;
   }
   
-  void set_motor_values(int val_1, int val_2, int val_3, int val_4)
+  void set_motor_values(int val_1, int val_2)
   {
     std::stringstream ss;
-    ss << "m " << val_1 << " " << val_2 << " " << val_3 << " " << val_4 << "\n";
+    ss << "m " << val_1 << " " << val_2 << "\n";
     send_msg(ss.str());
   }
 

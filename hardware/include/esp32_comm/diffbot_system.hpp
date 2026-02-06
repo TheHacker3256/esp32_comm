@@ -43,8 +43,6 @@ struct Config
 {
   std::string front_left_wheel_name = "";
   std::string front_right_wheel_name = "";
-  std::string rear_left_wheel_name = "";
-  std::string rear_right_wheel_name = "";
   float loop_rate = 0.0;
   std::string device = "";
   int baud_rate = 0;
@@ -101,8 +99,6 @@ private:
   Config cfg_;
   Wheel wheel_fl_;
   Wheel wheel_fr_;
-  Wheel wheel_rl_;
-  Wheel wheel_rr_;
 };
 
 }  // namespace esp32_comm
